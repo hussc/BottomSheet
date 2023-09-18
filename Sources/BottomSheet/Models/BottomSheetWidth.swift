@@ -24,6 +24,10 @@ public enum BottomSheetWidth: Equatable {
     /// - iPhone portrait: 100% of the available width.
     case platformDefault
     
+    /// Apply a platform dependant width to the sheet.
+    ///
+    case platformDependant([BottomSheetPresentationPlatform: BottomSheetWidth])
+    
     /// The width of the BottomSheet is equal to x% of the available width.
     /// Only values between 0 and 1 make sense.
     /// Instead of 0 please use `BottomSheetPosition.hidden`.

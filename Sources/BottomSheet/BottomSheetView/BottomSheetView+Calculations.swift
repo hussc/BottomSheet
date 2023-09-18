@@ -159,6 +159,8 @@ internal extension BottomSheetView {
             
         case .platformDefault:
             return self.platformDefaultWidth(with: geometry)
+        case .platformDependant(let dict):
+            return platformDependantWidth(for: dict, in: geometry)
             
         case .relative(let width):
             // Don't allow the width to be smaller than zero, or larger than one
@@ -176,6 +178,63 @@ internal extension BottomSheetView {
                 width
             )
         }
+    }
+    
+    
+    func platformDependantWidth(for dict: [BottomSheetPresentationPlatform: BottomSheetWidth], in geometry: GeometryProxy) -> CGFloat {
+        
+#if os(macOS)
+        guard let platform = dict[.mac] else {
+            return self.platformDefaultWidth(with: geometry)
+        }
+        
+        switch platform {
+        case .platformDependant, .platformDefault:
+            return self.platformDefaultWidth(with: geometry)
+        case .absolute(let width):
+            return max(
+                0,
+                width
+            )
+        case .relative(let width):
+            // Don't allow the width to be smaller than zero, or larger than one
+            return geometry.size.width * max(
+                0,
+                min(
+                    1,
+                    width
+                )
+            )
+        }
+#else
+        var platformWidth: BottomSheetWidth
+        if self.isIPad {
+            platformWidth = dict[.iPad] ?? .platformDefault
+        } else if UIDevice.current.userInterfaceIdiom == .phone && UIDevice.current.orientation.isLandscape {
+            platformWidth = dict[.iPhoneLandscape] ?? .platformDefault
+        } else {
+            platformWidth = dict[.iPhone] ?? .platformDefault
+        }
+        
+        switch platformWidth {
+        case .platformDependant, .platformDefault:
+            return self.platformDefaultWidth(with: geometry)
+        case .absolute(let width):
+            return max(
+                0,
+                width
+            )
+        case .relative(let width):
+            // Don't allow the width to be smaller than zero, or larger than one
+            return geometry.size.width * max(
+                0,
+                min(
+                    1,
+                    width
+                )
+            )
+        }
+#endif
     }
     
     func platformDefaultWidth(with geometry: GeometryProxy) -> CGFloat {
